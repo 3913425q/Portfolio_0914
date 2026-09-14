@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주원 / Portfolio</title>
+<meta name="description" content="시각영상디자인 전공 주원의 포트폴리오">
+
+<style>
+  /* ==========================================================
+     0. 토큰 (색상 / 타이포 / 간격)
+     ========================================================== */
+  :root{
+    --paper: #ffffff;
+    --paper-soft: #f2f2f0;
+    --ink: #131313;
+    --muted: #6f6f6c;
+    --line: #dedcd6;
+    --signal: #ff3d1a;
+
+    --font: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Segoe UI", "Pretendard", "Apple SD Gothic Neo", Arial, sans-serif;
+
+    --nav-h: 76px;
+    --pad: clamp(20px, 4vw, 56px);
+    --radius: 2px;
+  }
+
+  *,*::before,*::after{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    margin:0;
+    font-family:var(--font);
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+  }
+  img{ max-width:100%; display:block; }
+  button{ font-family:inherit; }
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:var(--ink); color:var(--paper); }
+
+  :focus-visible{
+    outline: 2px solid var(--signal);
+    outline-offset: 3px;
+  }
+
+  /* 커스텀 커서 (마우스 포인터 기기에서만 활성화) */
+  #cursorDot,#cursorRing{
+    position:fixed; top:0; left:0;
+    pointer-events:none;
+    z-index:9999;
+    border-radius:50%;
+    transform-origin:center;
+    will-change:transform;
+  }
+  #cursorDot{
+    width:6px; height:6px;
+    margin:-3px 0 0 -3px;
+    background:var(--ink);
+  }
+  #cursorRing{
+    width:36px; height:36px;
+    margin:-18px 0 0 -18px;
+    border:1px solid var(--ink);
+    mix-blend-mode:difference;
+    background:transparent;
+    transition: width .25s ease, height .25s ease, margin .25s ease, border-color .25s ease, background .25s ease;
+  }
+  #cursorRing.hovered{
+    width:64px; height:64px;
+    margin:-32px 0 0 -32px;
+    background: var(--signal);
+    border-color: var(--signal);
+  }
+  body.custom-cursor, body.custom-cursor *{ cursor:none; }
+  body.touch #cursorDot, body.touch #cursorRing{ display:none; }
+
+  /* ==========================================================
+     1. 상단 내비게이션
+     ========================================================== */
+  .topnav{
+    position:fixed; top:0; left:0; right:0;
+    height:var(--nav-h);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 var(--pad);
+    z-index:500;
+    background:linear-gradient(to bottom, rgba(255,255,255,.9), rgba(255,255,255,0));
+    pointer-events:none;
+  }
+  .topnav > *{ pointer-events:auto; }
+  .logo{
+    font-size:15px; font-weight:700; letter-spacing:.02em;
+  }
+  .nav-links{
+    display:flex; gap:clamp(18px,3vw,36px); list-style:none; margin:0; padding:0;
+  }
+  .nav-links a{
+    font-size:14px; font-weight:500; color:var(--muted);
+    position:relative; padding:4px 0;
+  }
+  .nav-links a::after{
+    content:''; position:absolute; left:0; right:100%; bottom:0; height:1px;
+    background:var(--signal);
+    transition:right .25s ease;
+  }
+  .nav-links a:hover{ color:var(--ink); }
+  .nav-links a:hover::after{ right:0; }
+  .nav-links a.active{ color:var(--ink); }
+  .nav-links a.active::after{ right:0; }
+
+  /* ==========================================================
+     2. 뷰(페이지) 전환 구조
+     ========================================================== */
+  .view{ display:none; min-height:100vh; }
+  .view.active{ display:block; }
+
+  /* ==========================================================
+     3. HOME
+     ========================================================== */
+  #home.view.active{ display:flex; }
+  .home-inner{
+    width:100%;
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    position:relative;
+    padding: calc(var(--nav-h) + 24px) var(--pad) 60px;
+    overflow:hidden;
+    background-image:
+      radial-gradient(circle at 1px 1px, var(--line) 1px, transparent 0);
+    background-size: 28px 28px;
+  }
+
+  .hero-role{
+    font-size: clamp(12px,1.6vw,14px);
+    letter-spacing:.04em;
+    color:var(--muted);
+    margin:0 0 18px;
+  }
+
+  .hero-name{
+    margin:0;
+    font-weight:800;
+    font-size: clamp(64px, 15vw, 190px);
+    line-height:.92;
+    letter-spacing:-0.03em;
+    text-align:center;
+    user-select:none;
+  }
+  .hero-name .letter{
+    display:inline-block;
+    transition: transform .05s linear;
+  }
+
+  .hero-sub{
+    max-width:520px;
+    text-align:center;
+    color:var(--muted);
+    font-size:16px;
+    margin: 22px 0 0;
+  }
+
+  .copy-badge{
+    position:absolute;
+    right: clamp(16px, 6vw, 96px);
+    bottom: clamp(16px, 6vw, 88px);
+    width: clamp(120px,16vw,168px);
+    height: clamp(120px,16vw,168px);
+    cursor:pointer;
+    background:none;
+    border:none;
+    padding:0;
+  }
+  .copy-badge svg{ width:100%; height:100%; display:block; }
+  .copy-badge .badge-rotor{
+    transform-origin:100px 100px;
+    animation: spin 20s linear infinite;
+  }
+  .copy-badge:hover .badge-rotor{ animation-duration:6s; }
+  .copy-badge .badge-track{ fill:none; }
+  .copy-badge .badge-ring-text{
+    font-size:11.4px; letter-spacing:2px; fill:var(--ink);
+  }
+  .copy-badge .badge-center{ fill:var(--ink); transition:fill .2s ease; }
+  .copy-badge:hover .badge-center{ fill:var(--signal); }
+  .copy-badge .badge-plus{
+    fill:var(--paper); font-size:34px; font-weight:300; text-anchor:middle;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  .scroll-hint{
+    position:absolute; left:var(--pad); bottom:32px;
+    font-size:12px; color:var(--muted); letter-spacing:.02em;
+  }
+
+  /* ==========================================================
+     4. 공통 섹션 레이아웃
+     ========================================================== */
+  .section{
+    padding: calc(var(--nav-h) + 48px) var(--pad) 100px;
+    max-width:1180px;
+    margin:0 auto;
+  }
+  .section-heading{
+    font-size: clamp(32px,5vw,56px);
+    font-weight:800;
+    letter-spacing:-0.02em;
+    margin:0 0 48px;
+  }
+
+  /* ==========================================================
+     5. ABOUT
+     ========================================================== */
+  .about-grid{
+    display:grid;
+    grid-template-columns: minmax(180px,280px) 1fr;
+    gap:56px;
+  }
+  .about-photo{
+    aspect-ratio: 3/4;
+    background:var(--paper-soft);
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    color:var(--muted); font-size:13px;
+  }
+  .about-statement{
+    font-size: clamp(19px,2.4vw,26px);
+    line-height:1.55;
+    font-weight:500;
+    max-width:640px;
+    margin:0 0 40px;
+  }
+  .about-block{ margin-bottom:36px; }
+  .about-block h3{
+    font-size:13px; font-weight:700; color:var(--muted);
+    margin:0 0 14px;
+  }
+  .skill-list{
+    display:flex; flex-wrap:wrap; gap:10px; list-style:none; padding:0; margin:0;
+  }
+  .skill-list li{
+    border:1px solid var(--line);
+    padding:7px 14px;
+    font-size:13.5px;
+    border-radius: 999px;
+  }
+  .timeline{ list-style:none; padding:0; margin:0; border-top:1px solid var(--line); }
+  .timeline li{
+    display:flex; justify-content:space-between; gap:20px;
+    padding:16px 0;
+    border-bottom:1px solid var(--line);
+    font-size:15px;
+  }
+  .timeline .t-role{ font-weight:600; }
+  .timeline .t-org{ color:var(--muted); }
+  .timeline .t-period{ color:var(--muted); white-space:nowrap; font-size:13.5px; }
+
+  /* ==========================================================
+     6. WORKS
+     ========================================================== */
+  .filter-row{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin-bottom:40px;
+  }
+  .filter-btn{
+    border:1px solid var(--line);
+    background:var(--paper);
+    color:var(--muted);
+    padding:9px 18px;
+    font-size:13.5px; font-weight:500;
+    border-radius:999px;
+    cursor:pointer;
+    transition:.18s ease;
+  }
+  .filter-btn:hover{ border-color:var(--ink); color:var(--ink); }
+  .filter-btn.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+
+  .works-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(280px,1fr));
+    gap:28px 24px;
+  }
+  .project-card{
+    text-align:left;
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    display:block;
+    width:100%;
+  }
+  .card-visual{
+    aspect-ratio:4/3;
+    display:flex; align-items:flex-end;
+    padding:18px;
+    position:relative;
+    overflow:hidden;
+    transition:transform .35s ease;
+  }
+  .project-card:hover .card-visual{ transform:translateY(-4px); }
+  .card-visual-label{
+    color:#fff;
+    font-weight:700;
+    font-size:17px;
+    letter-spacing:-0.01em;
+  }
+  /* 카테고리별 플레이스홀더 그래픽 (실제 작업 이미지로 교체) */
+  .cat-uiux{ background:linear-gradient(135deg,#232323,#5b5b5b); }
+  .cat-ad{ background:linear-gradient(135deg,#ff3d1a,#ff8a4c); }
+  .cat-branding{ background:linear-gradient(135deg,#123,#2f5dff); }
+  .cat-book{ background:linear-gradient(135deg,#3a3226,#8a7a5c); }
+
+  .card-meta{
+    display:flex; flex-direction:column; gap:4px;
+    padding-top:14px;
+  }
+  .card-category{
+    font-size:12px; color:var(--signal); font-weight:700;
+  }
+  .card-title{ font-size:16.5px; font-weight:600; }
+  .card-year{ font-size:13px; color:var(--muted); }
+
+  /* ==========================================================
+     7. 프로젝트 상세 오버레이
+     ========================================================== */
+  .detail-overlay{
+    position:fixed; inset:0;
+    background:rgba(19,19,19,.5);
+    z-index:1000;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding: 40px var(--pad);
+    overflow-y:auto;
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease;
+  }
+  .detail-overlay.open{ opacity:1; pointer-events:auto; }
+  .detail-panel{
+    background:var(--paper);
+    width:100%; max-width:920px;
+    margin-top:20px;
+    position:relative;
+    transform:translateY(16px);
+    transition:transform .3s ease;
+  }
+  .detail-overlay.open .detail-panel{ transform:translateY(0); }
+  .detail-close{
+    position:absolute; top:14px; right:14px;
+    width:40px; height:40px;
+    border:1px solid var(--line);
+    background:var(--paper);
+    border-radius:50%;
+    font-size:20px; line-height:1;
+    cursor:pointer;
+    z-index:2;
+  }
+  .detail-visual{ aspect-ratio:16/9; }
+  .detail-body{ padding: clamp(24px,4vw,48px); }
+  .detail-category{ font-size:12px; color:var(--signal); font-weight:700; }
+  .detail-title{
+    font-size:clamp(26px,4vw,38px); font-weight:800; margin:10px 0 6px; letter-spacing:-0.02em;
+  }
+  .detail-year{ color:var(--muted); font-size:14px; margin:0 0 24px; }
+  .detail-overview{ font-size:16px; line-height:1.75; max-width:640px; margin:0 0 32px; }
+  .detail-gallery{
+    display:grid; grid-template-columns:1fr 1fr; gap:16px;
+  }
+  .detail-gallery .card-visual{ aspect-ratio:1/1; }
+
+  /* ==========================================================
+     8. CONTACT
+     ========================================================== */
+  .contact-section{
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:flex-start; justify-content:center;
+  }
+  .contact-item{ margin-bottom:44px; }
+  .contact-label{ font-size:13px; color:var(--muted); margin:0 0 10px; }
+  .contact-value{
+    font-size:clamp(30px,6vw,64px);
+    font-weight:800;
+    letter-spacing:-0.02em;
+    background:none; border:none; padding:0; cursor:pointer;
+    color:var(--ink); text-align:left;
+  }
+  .contact-value:hover{ color:var(--signal); }
+  .contact-foot{
+    margin-top:40px; font-size:13px; color:var(--muted);
+  }
+
+  /* ==========================================================
+     9. 토스트
+     ========================================================== */
+  #toast{
+    position:fixed; left:50%; bottom:36px;
+    transform:translate(-50%,20px);
+    background:var(--ink); color:var(--paper);
+    padding:12px 22px;
+    font-size:14px;
+    border-radius:999px;
+    opacity:0; pointer-events:none;
+    transition:opacity .25s ease, transform .25s ease;
+    z-index:2000;
+  }
+  #toast.show{ opacity:1; transform:translate(-50%,0); }
+
+  /* ==========================================================
+     10. 반응형
+     ========================================================== */
+  @media (max-width:720px){
+    .about-grid{ grid-template-columns:1fr; }
+    .about-photo{ max-width:200px; }
+    .detail-gallery{ grid-template-columns:1fr; }
+    .copy-badge{ width:104px; height:104px; }
+    .nav-links{ gap:16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .copy-badge .badge-rotor{ animation:none; }
+    html{ scroll-behavior:auto; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- 커스텀 커서 -->
+  <div id="cursorDot" aria-hidden="true"></div>
+  <div id="cursorRing" aria-hidden="true"></div>
+
+  <!-- 상단 내비게이션 -->
+  <nav class="topnav">
+    <a href="#home" class="logo" data-target="home">주원</a>
+    <ul class="nav-links">
+      <li><a href="#about" data-target="about">About</a></li>
+      <li><a href="#works" data-target="works">Works</a></li>
+      <li><a href="#contact" data-target="contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <main>
+
+    <!-- ============ HOME ============ -->
+    <section id="home" class="view active">
+      <div class="home-inner">
+        <p class="hero-role">Visual &amp; Media Communication Design</p>
+        <h1 class="hero-name" id="heroName">주원</h1>
+        <p class="hero-sub">이미지와 언어, 스크린과 인쇄물 사이를 오가며<br class="br-only-desktop"> 시각적인 형태를 만듭니다.</p>
+
+        <!-- 클릭 시 이메일이 복사되는 인터랙티브 그래픽 -->
+        <button class="copy-badge" id="copyBadge" data-hover aria-label="클릭하여 이메일 주소 복사">
+          <svg viewBox="0 0 200 200">
+            <g class="badge-rotor">
+              <defs>
+                <path id="circlePath" class="badge-track"
+                  d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0" />
+              </defs>
+              <text class="badge-ring-text">
+                <textPath href="#circlePath" startOffset="0%">
+                  Click to copy email · Click to copy email ·
+                </textPath>
+              </text>
+            </g>
+            <circle cx="100" cy="100" r="42" class="badge-center"></circle>
+            <text x="100" y="112" class="badge-plus">＋</text>
+          </svg>
+        </button>
+
+        <p class="scroll-hint">이메일 복사</p>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT ============ -->
+    <section id="about" class="view">
+      <div class="section">
+        <h2 class="section-heading">About</h2>
+
+        <div class="about-grid">
+          <div class="about-photo">Profile Image</div>
+
+          <div>
+            <p class="about-statement">
+              브랜드와 사용자 사이, 이미지와 정보 사이에서 균형을 찾는 시각디자이너 주원입니다.
+              그래픽, UI/UX, 편집디자인을 넘나들며 명확하고 절제된 형태로 메시지를 전달하는 작업을 합니다.
+            </p>
+
+            <div class="about-block">
+              <h3>Skills</h3>
+              <ul class="skill-list">
+                <li>Figma</li>
+                <li>Adobe Photoshop</li>
+                <li>Adobe Illustrator</li>
+                <li>Adobe InDesign</li>
+                <li>After Effects</li>
+                <li>Blender</li>
+              </ul>
+            </div>
+
+            <div class="about-block">
+              <h3>Education</h3>
+              <ul class="timeline">
+                <li>
+                  <span class="t-role">시각영상디자인 전공, 학사</span>
+                  <span class="t-period">2021 — 2027</span>
+                </li>
+              </ul>
+            </div>
+
+            <div class="about-block">
+              <h3>Experience</h3>
+              <ul class="timeline">
+                <li>
+                  <span>
+                    <span class="t-role">그래픽 디자인 인턴</span><br>
+                    <span class="t-org">스튜디오명</span>
+                  </span>
+                  <span class="t-period">2025</span>
+                </li>
+                <li>
+                  <span>
+                    <span class="t-role">브랜딩 프로젝트 참여</span><br>
+                    <span class="t-org">단체 / 공모전명</span>
+                  </span>
+                  <span class="t-period">2024</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WORKS ============ -->
+    <section id="works" class="view">
+      <div class="section">
+        <h2 class="section-heading">Works</h2>
+
+        <div class="filter-row" id="filterRow">
+          <button class="filter-btn active" data-filter="all">All</button>
+          <button class="filter-btn" data-filter="uiux">UI/UX</button>
+          <button class="filter-btn" data-filter="ad">AD</button>
+          <button class="filter-btn" data-filter="branding">Branding</button>
+          <button class="filter-btn" data-filter="book">Book</button>
+        </div>
+
+        <div class="works-grid" id="worksGrid"></div>
+      </div>
+    </section>
+
+    <!-- ============ CONTACT ============ -->
+    <section id="contact" class="view">
+      <div class="section contact-section">
+        <h2 class="section-heading">Contact</h2>
+
+        <div class="contact-item">
+          <p class="contact-label">Email — 클릭하면 복사됩니다</p>
+          <button class="contact-value" id="contactEmailBtn" data-hover>hello@juwon-design.com</button>
+        </div>
+
+        <div class="contact-item">
+          <p class="contact-label">Instagram</p>
+          <a class="contact-value" id="contactInstaLink" href="https://instagram.com/juwon.design" target="_blank" rel="noopener" data-hover>@juwon.design</a>
+        </div>
+
+        <p class="contact-foot">© 2026 Juwon. All works shown are for portfolio purposes.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ============ 프로젝트 상세 오버레이 ============ -->
+  <div class="detail-overlay" id="detailOverlay">
+    <div class="detail-panel">
+      <button class="detail-close" id="detailClose" aria-label="닫기" data-hover>×</button>
+      <div class="detail-visual" id="detailVisual"></div>
+      <div class="detail-body">
+        <p class="detail-category" id="detailCategory"></p>
+        <h3 class="detail-title" id="detailTitle"></h3>
+        <p class="detail-year" id="detailYear"></p>
+        <p class="detail-overview" id="detailOverview"></p>
+        <div class="detail-gallery" id="detailGallery"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ------------------------------------------------------------
+     설정값 — 실제 정보로 교체하세요
+     ------------------------------------------------------------ */
+  var CONTACT_EMAIL = "hello@juwon-design.com";
+
+  /* ------------------------------------------------------------
+     프로젝트 데이터 — 실제 작업물로 교체하세요
+     category: uiux / ad / branding / book
+     ------------------------------------------------------------ */
+  var PROJECTS = [
+    { id:1, title:"모바일 뱅킹 앱 UI", category:"uiux", categoryLabel:"UI/UX", year:"2025",
+      overview:"금융 서비스 접근성을 높이기 위한 모바일 뱅킹 앱 리디자인 프로젝트입니다. 정보 위계를 단순화하고 핵심 흐름의 탭 수를 줄이는 데 집중했습니다." },
+    { id:2, title:"전시 웹사이트", category:"uiux", categoryLabel:"UI/UX", year:"2024",
+      overview:"졸업 전시를 위한 반응형 웹사이트입니다. 작품 이미지가 주인공이 되도록 인터페이스 요소를 최소화했습니다." },
+    { id:3, title:"음악 페스티벌 포스터", category:"ad", categoryLabel:"AD", year:"2025",
+      overview:"지역 음악 페스티벌을 위한 광고 캠페인입니다. 타이포그래피 중심의 그래픽으로 라인업 정보를 전달했습니다." },
+    { id:4, title:"친환경 캠페인 비주얼", category:"ad", categoryLabel:"AD", year:"2024",
+      overview:"환경 캠페인을 위한 옥외광고 및 SNS 비주얼 시리즈입니다." },
+    { id:5, title:"카페 브랜드 아이덴티티", category:"branding", categoryLabel:"Branding", year:"2025",
+      overview:"작은 로컬 카페를 위한 브랜드 아이덴티티 프로젝트입니다. 로고, 패키지, 매장 사이니지를 포함합니다." },
+    { id:6, title:"독립 출판사 브랜딩", category:"branding", categoryLabel:"Branding", year:"2023",
+      overview:"독립 출판사를 위한 로고와 명함, 도서 시리즈 표지 시스템을 설계했습니다." },
+    { id:7, title:"사진집 편집 디자인", category:"book", categoryLabel:"Book", year:"2024",
+      overview:"도시 풍경을 담은 사진집의 편집 디자인입니다. 그리드와 여백을 통해 사진의 호흡을 조율했습니다." },
+    { id:8, title:"에세이집 표지 시리즈", category:"book", categoryLabel:"Book", year:"2023",
+      overview:"세 권으로 구성된 에세이 시리즈의 표지 및 내지 디자인입니다." }
+  ];
+
+  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var isTouch = window.matchMedia("(pointer: coarse)").matches || ("ontouchstart" in window);
+
+  /* ------------------------------------------------------------
+     1. 라우팅 (SPA 뷰 전환)
+     ------------------------------------------------------------ */
+  var VIEWS = ["home","about","works","contact"];
+  var TITLES = { home:"주원 / Portfolio", about:"주원 / About", works:"주원 / Works", contact:"주원 / Contact" };
+
+  function showView(name){
+    if (VIEWS.indexOf(name) === -1) name = "home";
+    VIEWS.forEach(function(v){
+      var el = document.getElementById(v);
+      if (el) el.classList.toggle("active", v === name);
+    });
+    document.querySelectorAll(".nav-links a").forEach(function(a){
+      a.classList.toggle("active", a.dataset.target === name);
+    });
+    document.title = TITLES[name];
+    window.scrollTo(0,0);
+  }
+
+  window.addEventListener("hashchange", function(){
+    showView(location.hash.replace("#",""));
+  });
+  showView(location.hash ? location.hash.replace("#","") : "home");
+
+  /* ------------------------------------------------------------
+     2. 토스트 알림
+     ------------------------------------------------------------ */
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function showToast(message){
+    toastEl.textContent = message;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2200);
+  }
+
+  /* ------------------------------------------------------------
+     3. 이메일 복사
+     ------------------------------------------------------------ */
+  function copyEmail(){
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(CONTACT_EMAIL)
+        .then(function(){ showToast("이메일 주소가 복사되었습니다"); })
+        .catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  }
+  function fallbackCopy(){
+    var ta = document.createElement("textarea");
+    ta.value = CONTACT_EMAIL;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); showToast("이메일 주소가 복사되었습니다"); }
+    catch(e){ showToast("복사에 실패했습니다: " + CONTACT_EMAIL); }
+    document.body.removeChild(ta);
+  }
+
+  document.getElementById("copyBadge").addEventListener("click", copyEmail);
+  document.getElementById("contactEmailBtn").addEventListener("click", copyEmail);
+
+  /* ------------------------------------------------------------
+     4. Works — 렌더링 및 필터링
+     ------------------------------------------------------------ */
+  var worksGrid = document.getElementById("worksGrid");
+
+  function renderProjects(){
+    worksGrid.innerHTML = PROJECTS.map(function(p){
+      return (
+        '<button class="project-card" data-id="' + p.id + '" data-category="' + p.category + '" data-hover>' +
+          '<span class="card-visual cat-' + p.category + '"><span class="card-visual-label">' + p.title + '</span></span>' +
+          '<span class="card-meta">' +
+            '<span class="card-category">' + p.categoryLabel + '</span>' +
+            '<span class="card-title">' + p.title + '</span>' +
+            '<span class="card-year">' + p.year + '</span>' +
+          '</span>' +
+        '</button>'
+      );
+    }).join("");
+
+    worksGrid.querySelectorAll(".project-card").forEach(function(card){
+      card.addEventListener("click", function(){
+        openDetail(Number(card.dataset.id));
+      });
+    });
+  }
+  renderProjects();
+
+  document.querySelectorAll(".filter-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".filter-btn").forEach(function(b){ b.classList.remove("active"); });
+      btn.classList.add("active");
+      var f = btn.dataset.filter;
+      worksGrid.querySelectorAll(".project-card").forEach(function(card){
+        var show = (f === "all" || card.dataset.category === f);
+        card.style.display = show ? "" : "none";
+      });
+    });
+  });
+
+  /* ------------------------------------------------------------
+     5. 프로젝트 상세 오버레이
+     ------------------------------------------------------------ */
+  var detailOverlay = document.getElementById("detailOverlay");
+  var detailVisual = document.getElementById("detailVisual");
+  var detailCategory = document.getElementById("detailCategory");
+  var detailTitle = document.getElementById("detailTitle");
+  var detailYear = document.getElementById("detailYear");
+  var detailOverview = document.getElementById("detailOverview");
+  var detailGallery = document.getElementById("detailGallery");
+
+  function openDetail(id){
+    var p = PROJECTS.filter(function(item){ return item.id === id; })[0];
+    if (!p) return;
+
+    detailVisual.className = "detail-visual cat-" + p.category;
+    detailCategory.textContent = p.categoryLabel;
+    detailTitle.textContent = p.title;
+    detailYear.textContent = p.year;
+    detailOverview.textContent = p.overview;
+    detailGallery.innerHTML =
+      '<span class="card-visual cat-' + p.category + '"></span>' +
+      '<span class="card-visual cat-' + p.category + '"></span>';
+
+    detailOverlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeDetail(){
+    detailOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  document.getElementById("detailClose").addEventListener("click", closeDetail);
+  detailOverlay.addEventListener("click", function(e){
+    if (e.target === detailOverlay) closeDetail();
+  });
+  window.addEventListener("keydown", function(e){
+    if (e.key === "Escape") closeDetail();
+  });
+
+  /* ------------------------------------------------------------
+     6. 히어로 타이틀 매그네틱 인터랙션 (마우스를 따라 글자가 반응)
+     ------------------------------------------------------------ */
+  var heroName = document.getElementById("heroName");
+  var heroText = heroName.textContent;
+  heroName.innerHTML = heroText.split("").map(function(ch){
+    return '<span class="letter">' + (ch === " " ? "&nbsp;" : ch) + '</span>';
+  }).join("");
+  var letters = heroName.querySelectorAll(".letter");
+
+  var mouse = { x: window.innerWidth/2, y: window.innerHeight/2 };
+  window.addEventListener("mousemove", function(e){
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  }, { passive:true });
+
+  function magneticLoop(){
+    if (!isTouch && !reduceMotion && document.getElementById("home").classList.contains("active")){
+      var radius = 170;
+      letters.forEach(function(letter){
+        var rect = letter.getBoundingClientRect();
+        var cx = rect.left + rect.width/2;
+        var cy = rect.top + rect.height/2;
+        var dx = mouse.x - cx;
+        var dy = mouse.y - cy;
+        var dist = Math.hypot(dx, dy);
+        if (dist < radius){
+          var power = 1 - dist / radius;
+          letter.style.transform = "translate(" + (-dx*0.3*power) + "px," + (-dy*0.3*power) + "px)";
+        } else {
+          letter.style.transform = "";
+        }
+      });
+    }
+    requestAnimationFrame(magneticLoop);
+  }
+  requestAnimationFrame(magneticLoop);
+
+  /* ------------------------------------------------------------
+     7. 커스텀 커서 (포인터 기기 전용)
+     ------------------------------------------------------------ */
+  if (!isTouch){
+    document.body.classList.add("custom-cursor");
+    var cursorDot = document.getElementById("cursorDot");
+    var cursorRing = document.getElementById("cursorRing");
+    var ring = { x: mouse.x, y: mouse.y };
+
+    function cursorLoop(){
+      cursorDot.style.transform = "translate(" + mouse.x + "px," + mouse.y + "px)";
+      ring.x += (mouse.x - ring.x) * 0.16;
+      ring.y += (mouse.y - ring.y) * 0.16;
+      cursorRing.style.transform = "translate(" + ring.x + "px," + ring.y + "px)";
+      requestAnimationFrame(cursorLoop);
+    }
+    requestAnimationFrame(cursorLoop);
+
+    document.addEventListener("mouseover", function(e){
+      if (e.target.closest("[data-hover]")) cursorRing.classList.add("hovered");
+    });
+    document.addEventListener("mouseout", function(e){
+      if (e.target.closest("[data-hover]")) cursorRing.classList.remove("hovered");
+    });
+  } else {
+    document.body.classList.add("touch");
+  }
+
+})();
+</script>
+</body>
+</html>
